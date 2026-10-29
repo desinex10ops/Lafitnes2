@@ -85,18 +85,54 @@ Na tela de login, há um seletor rápido para alternar entre os perfis:
 
 ## 🗄️ Integração com Supabase PostgreSQL
 
-O banco de dados pode ser conectado à sua instância Supabase a qualquer momento:
+O banco de dados está pronto para ser conectado a qualquer momento:
 
-1. Acesse o painel do Supabase ([https://supabase.com](https://supabase.com)).
-2. Crie um novo projeto PostgreSQL.
-3. No menu **SQL Editor**, cole e execute o conteúdo do arquivo [`supabase/schema.sql`](supabase/schema.sql).
-4. Copie a URL do projeto e a Chave Pública Anon.
-5. Crie ou renomeie o arquivo `.env` a partir do [`.env.example`](.env.example):
+1. Acesse o painel do Supabase ([https://supabase.com](https://supabase.com)) e crie um novo projeto.
+2. No menu lateral **SQL Editor**, cole e execute todo o conteúdo do arquivo [`supabase/schema.sql`](supabase/schema.sql).
+3. Em **Project Settings > API**, copie:
+   - **Project URL**
+   - **anon / public key**
+4. Para testes locais, crie o arquivo `.env` na raiz:
    ```env
    VITE_SUPABASE_URL=https://seu-projeto.supabase.co
    VITE_SUPABASE_ANON_KEY=sua-chave-anonima
    ```
-6. O sistema se conectará automaticamente à nuvem Supabase.
+*(Caso não preenchido, o sistema funciona 100% no modo local seguro / Offline-First)*.
+
+---
+
+## 🚢 Como Fazer o Deploy (GitHub + Vercel)
+
+### 1. Subir para o GitHub
+
+O repositório Git local já está inicializado na branch `main` com commit inicial e workflow de CI configurado.
+
+Para publicar no seu GitHub:
+```bash
+# 1. Crie um novo repositório vazio no GitHub (ex: lafitnes-pdv)
+# 2. Conecte o repositório remoto (substitua pelo seu link do GitHub):
+git remote add origin https://github.com/SEU_USUARIO/lafitnes-pdv.git
+
+# 3. Envie o código:
+git push -u origin main
+```
+
+### 2. Deploy na Vercel (Hospedagem em Produção)
+
+O projeto já contém o arquivo [`vercel.json`](vercel.json) configurado para suporte completo a SPA (Single Page Application), cabeçalhos de segurança e cache otimizado.
+
+1. Acesse [https://vercel.com](https://vercel.com) e faça login com sua conta do GitHub.
+2. Clique no botão **"Add New..."** > **"Project"**.
+3. Selecione o repositório `lafitnes-pdv` que acabou de subir no GitHub.
+4. As configurações de compilação são detectadas automaticamente:
+   - **Framework Preset:** `Vite`
+   - **Root Directory:** `./`
+   - **Build Command:** `npm run build`
+   - **Output Directory:** `dist`
+5. Na seção **Environment Variables**, adicione as variáveis do Supabase (se for usar o banco remoto):
+   - `VITE_SUPABASE_URL` = `https://seu-projeto.supabase.co`
+   - `VITE_SUPABASE_ANON_KEY` = `sua-chave-anonima`
+6. Clique em **"Deploy"**. Em menos de 1 minuto, seu PDV estará online com HTTPS gratuito e CDN global!
 
 ---
 
@@ -104,3 +140,4 @@ O banco de dados pode ser conectado à sua instância Supabase a qualquer moment
 
 - **No Google Chrome / Edge (Desktop):** Clique no ícone de instalação na barra de endereços (ao lado do favorito) ou em *Menu > Instalar LA FITNESS PDV*. O aplicativo abrirá em janela própria sem barras do navegador.
 - **No Celular (Android / iOS):** Acesse pelo navegador, clique em *Compartilhar* ou *Menu do Navegador* e selecione **Adicionar à Tela de Início**.
+
