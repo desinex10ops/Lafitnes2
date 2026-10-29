@@ -27,6 +27,25 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
+      // Previne zoom indesejado ao girar a roda do mouse (Ctrl + Wheel ou trackpad)
+      window.addEventListener('wheel', function(e) {
+        if (e.ctrlKey) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+
+      // Previne atalhos de zoom do teclado
+      window.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && (e.key === '=' || e.key === '+' || e.key === '-' || e.key === '0')) {
+          e.preventDefault();
+        }
+      });
+
+      // Previne gestos de pinça (zoom) em touchpads e touchscreens
+      document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
+      document.addEventListener('gesturechange', function(e) { e.preventDefault(); });
+      document.addEventListener('gestureend', function(e) { e.preventDefault(); });
+
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js').catch(err => {
