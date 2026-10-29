@@ -183,8 +183,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
               Por medidas de segurança corporativa, a redefinição de senhas de operadores e gerentes é realizada diretamente pelo <strong className="text-white">Administrador</strong> do sistema na tela <strong className="text-white">14. USUÁRIOS</strong>.
             </p>
             <p className="text-xs text-slate-400">
-              Senhas padrão do ambiente de teste:<br />
-              • Admin: <code className="text-emerald-400 font-mono">admin123</code><br />
+              Senhas padrão de acesso:<br />
+              • Admin (Layne): <code className="text-emerald-400 font-mono">admin123</code> (ou e-mail: admin@lafitness.com.br)<br />
               • Gerente: <code className="text-emerald-400 font-mono">gerente123</code><br />
               • Caixa: <code className="text-emerald-400 font-mono">caixa123</code>
             </p>

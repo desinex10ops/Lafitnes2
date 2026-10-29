@@ -103,12 +103,31 @@ export class DatabaseService {
     }
     if (!localStorage.getItem(STORAGE_KEYS.USERS)) {
       save(STORAGE_KEYS.USERS, initialUsers);
+    } else {
+      // Garante que o usuário administrador se chama Layne
+      const users = load<User[]>(STORAGE_KEYS.USERS, []);
+      let changed = false;
+      users.forEach(u => {
+        if (u.role === 'ADMINISTRADOR' && (u.name === 'Administrador' || u.name.includes('Carlos Oliveira'))) {
+          u.name = 'Layne (Administradora)';
+          changed = true;
+        }
+      });
+      if (changed) {
+        save(STORAGE_KEYS.USERS, users);
+      }
     }
     if (!localStorage.getItem(STORAGE_KEYS.CUSTOMERS)) {
       save(STORAGE_KEYS.CUSTOMERS, initialCustomers);
     }
     if (!localStorage.getItem(STORAGE_KEYS.CURRENT_USER)) {
       save(STORAGE_KEYS.CURRENT_USER, initialUsers[0]); // Inicia como Admin por padrão
+    } else {
+      const current = load<User | null>(STORAGE_KEYS.CURRENT_USER, null);
+      if (current && current.role === 'ADMINISTRADOR' && (current.name === 'Administrador' || current.name.includes('Carlos Oliveira'))) {
+        current.name = 'Layne (Administradora)';
+        save(STORAGE_KEYS.CURRENT_USER, current);
+      }
     }
   }
 

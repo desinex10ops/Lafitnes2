@@ -40,7 +40,7 @@ export const initialSettings: StoreSettings = {
 export const initialUsers: User[] = [
   {
     id: 'user-admin-1',
-    name: 'Administrador',
+    name: 'Layne (Administradora)',
     email: 'admin@lafitness.com.br',
     role: 'ADMINISTRADOR',
     active: true,

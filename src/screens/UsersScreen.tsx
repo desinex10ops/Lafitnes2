@@ -54,6 +54,57 @@ export const UsersScreen: React.FC = () => {
     setShowModal(true);
   };
 
+  const handleOpenNewAdmin = () => {
+    if (currentUser?.role !== 'ADMINISTRADOR') {
+      alert('ACESSO RESTRITO: Apenas Administradores podem cadastrar novos administradores.');
+      return;
+    }
+    setEditingUser(null);
+    setFormData({
+      name: '',
+      email: '',
+      role: 'ADMINISTRADOR',
+      maxDiscountPercent: 100,
+      canCancelSales: true,
+      canAdjustStock: true,
+      canRestoreBackup: true,
+      active: true,
+      passwordHash: 'admin123'
+    });
+    setShowModal(true);
+  };
+
+  const handleRoleChange = (newRole: UserRole) => {
+    if (newRole === 'ADMINISTRADOR') {
+      setFormData(prev => ({
+        ...prev,
+        role: newRole,
+        maxDiscountPercent: 100,
+        canCancelSales: true,
+        canAdjustStock: true,
+        canRestoreBackup: true
+      }));
+    } else if (newRole === 'GERENTE') {
+      setFormData(prev => ({
+        ...prev,
+        role: newRole,
+        maxDiscountPercent: 25,
+        canCancelSales: true,
+        canAdjustStock: true,
+        canRestoreBackup: false
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        role: newRole,
+        maxDiscountPercent: 10,
+        canCancelSales: false,
+        canAdjustStock: false,
+        canRestoreBackup: false
+      }));
+    }
+  };
+
   const handleOpenEdit = (user: User) => {
     if (currentUser?.role !== 'ADMINISTRADOR') {
       alert('ACESSO RESTRITO: Apenas Administradores podem editar usuários.');
@@ -76,24 +127,25 @@ export const UsersScreen: React.FC = () => {
       return;
     }
 
+    const isAdmin = formData.role === 'ADMINISTRADOR';
     const toSave: User = {
       id: editingUser?.id || `user-${Date.now()}`,
       name: formData.name.toUpperCase(),
       email: formData.email.toLowerCase().trim(),
       role: formData.role || 'OPERADOR',
       active: formData.active !== false,
-      maxDiscountPercent: Number(formData.maxDiscountPercent) || 5,
-      canCancelSales: Boolean(formData.canCancelSales),
-      canAdjustStock: Boolean(formData.canAdjustStock),
-      canRestoreBackup: Boolean(formData.canRestoreBackup),
-      passwordHash: formData.passwordHash || '123456',
+      maxDiscountPercent: isAdmin ? 100 : (Number(formData.maxDiscountPercent) || 5),
+      canCancelSales: isAdmin ? true : Boolean(formData.canCancelSales),
+      canAdjustStock: isAdmin ? true : Boolean(formData.canAdjustStock),
+      canRestoreBackup: isAdmin ? true : Boolean(formData.canRestoreBackup),
+      passwordHash: formData.passwordHash || (isAdmin ? 'admin123' : '123456'),
       createdAt: editingUser?.createdAt || new Date().toISOString()
     };
 
     DatabaseService.saveUser(toSave);
     setUsers(DatabaseService.getUsers());
     setShowModal(false);
-    alert('Usuário salvo com sucesso!');
+    alert(`Usuário ${toSave.name} (${toSave.role}) salvo com sucesso!`);
   };
 
   return (
@@ -111,13 +163,23 @@ export const UsersScreen: React.FC = () => {
         </div>
 
         {currentUser?.role === 'ADMINISTRADOR' && (
-          <button
-            onClick={handleOpenNew}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold uppercase shadow cursor-pointer transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            CADASTRAR USUÁRIO
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={handleOpenNewAdmin}
+              className="flex items-center gap-2 px-3.5 py-2 bg-purple-700 hover:bg-purple-600 text-white rounded-lg text-xs font-bold uppercase shadow cursor-pointer transition-colors border border-purple-500 shadow-purple-900/30"
+              title="Cadastrar usuário com permissões completas de Administrador"
+            >
+              <Shield className="w-4 h-4 text-purple-300" />
+              <span>+ NOVO ADMINISTRADOR</span>
+            </button>
+            <button
+              onClick={handleOpenNew}
+              className="flex items-center gap-2 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold uppercase shadow cursor-pointer transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              <span>+ CADASTRAR USUÁRIO</span>
+            </button>
+          </div>
         )}
       </div>
 
@@ -228,12 +290,12 @@ export const UsersScreen: React.FC = () => {
               <label className="text-xs font-bold uppercase text-slate-300 block">NÍVEL DE ACESSO</label>
               <select
                 value={formData.role}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value as UserRole })}
-                className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded text-slate-100 text-xs font-bold uppercase"
+                onChange={(e) => handleRoleChange(e.target.value as UserRole)}
+                className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded text-slate-100 text-xs font-bold uppercase focus:border-purple-500"
               >
                 <option value="OPERADOR">OPERADOR DE CAIXA</option>
                 <option value="GERENTE">GERENTE</option>
-                <option value="ADMINISTRADOR">ADMINISTRADOR</option>
+                <option value="ADMINISTRADOR">ADMINISTRADOR (ACESSO TOTAL)</option>
               </select>
             </div>
 
@@ -249,6 +311,16 @@ export const UsersScreen: React.FC = () => {
               />
             </div>
           </div>
+
+          {formData.role === 'ADMINISTRADOR' && (
+            <div className="p-3 bg-purple-950/60 border border-purple-800 rounded-lg text-xs text-purple-200 flex items-start gap-2.5">
+              <Shield className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
+              <div>
+                <strong className="text-white block font-bold uppercase tracking-wider">Perfil Administrador Completo</strong>
+                <span className="text-[11px] text-purple-300">Este usuário terá acesso total ao sistema: gerenciamento de usuários, cancelamento de vendas, desconto ilimitado (100%), inventário, configurações fiscais e backups.</span>
+              </div>
+            </div>
+          )}
 
           <div className="space-y-1">
             <label className="text-xs font-bold uppercase text-slate-300 block">SENHA DE ACESSO</label>
