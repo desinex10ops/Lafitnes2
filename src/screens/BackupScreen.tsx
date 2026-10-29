@@ -16,7 +16,8 @@ import {
   RefreshCw,
   FolderArchive,
   Check,
-  FileText
+  FileText,
+  Trash2
 } from 'lucide-react';
 
 export const BackupScreen: React.FC = () => {
@@ -150,6 +151,27 @@ export const BackupScreen: React.FC = () => {
     }
 
     alert(res.message);
+    window.location.reload();
+  };
+
+  const handleClearAllData = () => {
+    if (currentUser?.role !== 'ADMINISTRADOR') {
+      alert('ACESSO NEGADO: Apenas Administradores podem zerar o sistema.');
+      return;
+    }
+    const confirmed = window.confirm(
+      '⚠️ ATENÇÃO: Deseja ZERAR TODOS OS DADOS do sistema para iniciar o uso real da loja?\n\n' +
+      'Esta ação irá apagar:\n' +
+      '• Todos os produtos, variações e estoque cadastrado\n' +
+      '• Todas as vendas, cupons e histórico de caixa\n' +
+      '• Todos os clientes (mantendo apenas Consumidor Balcão padrão)\n' +
+      '• Todas as compras, contas a pagar, duplicatas e despesas\n\n' +
+      'Os dados dos usuários e configurações da loja serão preservados.\n\nDeseja confirmar a limpeza completa?'
+    );
+    if (!confirmed) return;
+
+    DatabaseService.clearAllData();
+    alert('✅ Sistema limpo com sucesso! A aplicação será reiniciada pronta para cadastro.');
     window.location.reload();
   };
 
@@ -419,6 +441,29 @@ export const BackupScreen: React.FC = () => {
           >
             <Upload className="w-4 h-4" />
             <span>CONFIRMAR & RESTAURAR SISTEMA</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Zona de Limpeza de Dados (Reset para Produção) */}
+      <div className="bg-slate-900 border border-red-900/40 rounded-lg p-5 space-y-3 shadow-md">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div>
+            <h2 className="text-xs font-black uppercase tracking-wider text-red-400 flex items-center gap-2">
+              <Trash2 className="w-4 h-4" />
+              ZONA DE LIMPEZA GERAL & RESET DO SISTEMA (ADMIN)
+            </h2>
+            <p className="text-xs text-slate-400 mt-1">
+              Remove todos os produtos, vendas, movimentações de caixa, contas e dados fictícios para deixar o sistema 100% limpo para uso comercial real.
+            </p>
+          </div>
+          <button
+            onClick={handleClearAllData}
+            disabled={currentUser?.role !== 'ADMINISTRADOR'}
+            className="shrink-0 px-4 py-2.5 bg-red-800/80 hover:bg-red-700 disabled:opacity-40 text-white font-bold text-xs uppercase rounded-lg shadow transition-colors flex items-center gap-2 cursor-pointer border border-red-600"
+          >
+            <Trash2 className="w-4 h-4" />
+            <span>ZERAR TODOS OS DADOS AGORA</span>
           </button>
         </div>
       </div>

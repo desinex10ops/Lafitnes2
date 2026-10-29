@@ -21,15 +21,9 @@ import {
 import { supabase, isSupabaseConfigured } from './supabase';
 
 import {
-  initialProducts,
-  initialSuppliers,
   initialCustomers,
   initialSettings,
-  initialUsers,
-  initialActiveRegister,
-  initialDuplicatas,
-  initialBillsToPay,
-  initialExpenses
+  initialUsers
 } from './mockData';
 
 // Chaves para persistência segura
@@ -78,101 +72,43 @@ function save<T>(key: string, data: T): void {
 }
 
 export class DatabaseService {
+  // Limpeza completa para sistema novo de produção
+  public static clearAllData(): void {
+    save(STORAGE_KEYS.PRODUCTS, []);
+    save(STORAGE_KEYS.SUPPLIERS, []);
+    save(STORAGE_KEYS.CUSTOMERS, initialCustomers);
+    save(STORAGE_KEYS.SALES, []);
+    save(STORAGE_KEYS.STOCK_MOVEMENTS, []);
+    save(STORAGE_KEYS.REGISTERS, []);
+    save(STORAGE_KEYS.ACTIVE_REGISTER, null);
+    save(STORAGE_KEYS.DUPLICATAS, []);
+    save(STORAGE_KEYS.BILLS_TO_PAY, []);
+    save(STORAGE_KEYS.EXPENSES, []);
+    save(STORAGE_KEYS.PURCHASES, []);
+    save(STORAGE_KEYS.INVENTORIES, []);
+    save(STORAGE_KEYS.AUDIT_LOGS, []);
+    save(STORAGE_KEYS.AUTO_BACKUPS, []);
+    save('lafitness_clean_v1', 'true');
+  }
+
   // Inicialização do banco com dados padrão se estiver vazio
   public static init(): void {
+    const isCleaned = localStorage.getItem('lafitness_clean_v1');
+    if (!isCleaned) {
+      this.clearAllData();
+    }
+
     if (!localStorage.getItem(STORAGE_KEYS.SETTINGS)) {
       save(STORAGE_KEYS.SETTINGS, initialSettings);
     }
     if (!localStorage.getItem(STORAGE_KEYS.USERS)) {
       save(STORAGE_KEYS.USERS, initialUsers);
     }
-    if (!localStorage.getItem(STORAGE_KEYS.PRODUCTS)) {
-      save(STORAGE_KEYS.PRODUCTS, initialProducts);
-    } else {
-      // Sincroniza imagens nos produtos existentes caso ainda não tenham
-      const existingProds = load<Product[]>(STORAGE_KEYS.PRODUCTS, []);
-      let updated = false;
-      existingProds.forEach(p => {
-        if (!p.imageUrl) {
-          const match = initialProducts.find(ip => ip.id === p.id || ip.code === p.code);
-          if (match?.imageUrl) {
-            p.imageUrl = match.imageUrl;
-            updated = true;
-          }
-        }
-      });
-      if (updated) {
-        save(STORAGE_KEYS.PRODUCTS, existingProds);
-      }
-    }
     if (!localStorage.getItem(STORAGE_KEYS.CUSTOMERS)) {
       save(STORAGE_KEYS.CUSTOMERS, initialCustomers);
     }
-    if (!localStorage.getItem(STORAGE_KEYS.SUPPLIERS)) {
-      save(STORAGE_KEYS.SUPPLIERS, initialSuppliers);
-    }
-    if (!localStorage.getItem(STORAGE_KEYS.ACTIVE_REGISTER)) {
-      save(STORAGE_KEYS.ACTIVE_REGISTER, initialActiveRegister);
-      save(STORAGE_KEYS.REGISTERS, [initialActiveRegister]);
-    }
-    if (!localStorage.getItem(STORAGE_KEYS.DUPLICATAS)) {
-      save(STORAGE_KEYS.DUPLICATAS, initialDuplicatas);
-    }
-    if (!localStorage.getItem(STORAGE_KEYS.BILLS_TO_PAY)) {
-      save(STORAGE_KEYS.BILLS_TO_PAY, initialBillsToPay);
-    }
-    if (!localStorage.getItem(STORAGE_KEYS.EXPENSES)) {
-      save(STORAGE_KEYS.EXPENSES, initialExpenses);
-    }
     if (!localStorage.getItem(STORAGE_KEYS.CURRENT_USER)) {
       save(STORAGE_KEYS.CURRENT_USER, initialUsers[0]); // Inicia como Admin por padrão
-    }
-    if (!localStorage.getItem(STORAGE_KEYS.SALES)) {
-      // Cria uma venda de exemplo para alimentar os relatórios de saída
-      const sampleSale: Sale = {
-        id: 'sale-init-1',
-        saleNumber: 1001,
-        registerSessionId: 'reg-session-1',
-        operatorId: 'user-operador-1',
-        operatorName: 'Mariana Silva',
-        customerId: 'cust-2',
-        customerName: 'Camila Rodrigues Silva',
-        customerDoc: '321.654.987-10',
-        subtotal: 239.80,
-        discountAmount: 0,
-        total: 239.80,
-        totalCost: 84.00,
-        status: 'CONCLUIDA',
-        createdAt: new Date(Date.now() - 5 * 86400 * 1000).toISOString(),
-        items: [
-          {
-            id: 'item-1',
-            saleId: 'sale-init-1',
-            productId: 'prod-1',
-            productName: 'LEGGING SUPLEX ALTA COMPRESSÃO ZERO TRANSPARÊNCIA',
-            variationId: 'var-1-2',
-            color: 'Preto',
-            size: 'M',
-            barcode: '7891001000126',
-            quantity: 2,
-            unitPrice: 119.90,
-            costPrice: 42.00,
-            discountPercent: 0,
-            discountAmount: 0,
-            totalPrice: 239.80
-          }
-        ],
-        payments: [
-          {
-            id: 'pay-1',
-            saleId: 'sale-init-1',
-            method: 'DUPLICATA',
-            amount: 239.80,
-            installments: 2
-          }
-        ]
-      };
-      save(STORAGE_KEYS.SALES, [sampleSale]);
     }
   }
 
